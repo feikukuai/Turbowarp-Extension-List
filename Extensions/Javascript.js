@@ -1,71 +1,64 @@
-// Original extension by @LilyMakesThings
-
+// TurboWarp 扩展：Simple JS Executor
+// ID: simpleJsExecutor
+// 极简版，仅用于测试基本功能
 (function (Scratch) {
-  'use strict';
+    'use strict';
 
-  const vm = Scratch.vm;
-  const runtime = vm.runtime;
-  const isPackaged = runtime.isPackaged;
+    class SimpleJsExecutor {
+        getInfo() {
+            return {
+                id: 'simpleJsExecutor',
+                name: 'Simple JS',
+                color1: '#ff8000',
+                blocks: [
+                    {
+                        opcode: 'runCode',
+                        blockType: Scratch.BlockType.COMMAND,
+                        text: 'run [CODE]',
+                        arguments: {
+                            CODE: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: 'alert("Hi!")'
+                            }
+                        }
+                    },
+                    {
+                        opcode: 'runCodeWithReturn',
+                        blockType: Scratch.BlockType.REPORTER,
+                        text: 'run [CODE] and return',
+                        arguments: {
+                            CODE: {
+                                type: Scratch.ArgumentType.STRING,
+                                defaultValue: '2 + 2'
+                            }
+                        }
+                    }
+                ]
+            };
+        }
 
-  let allowJSCode = true;
-  let ineditor = true;
+        runCode(args) {
+            try {
+                // 直接执行用户输入的代码
+                new Function(args.CODE)();
+            } catch (error) {
+                console.error('Run Error:', error.message);
+                alert(`执行出错: ${error.message}`);
+            }
+        }
 
-  if (!Scratch.extensions.unsandboxed) {
-    throw new Error('This extension must run unsandboxed');
-  }
-  
-  class CustomJS {
-    getInfo() {
-      return {
-        id: 'JavaScript',
-        name: 'JavaScript',
-        color1: '#AAAAAA',
-        blocks: [
-          {
-            opcode: 'execute',
-            func: 'javascript',
-            blockType: Scratch.BlockType.COMMAND,
-            text: 'execute [JS]',
-            arguments: {
-              JS: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: 'alert("Hello World!")'
-              }
+        runCodeWithReturn(args) {
+            try {
+                // 执行代码并返回结果
+                const result = new Function(`return ${args.CODE}`)();
+                return result;
+            } catch (error) {
+                console.error('Run Error:', error.message);
+                return `出错: ${error.message}`;
             }
-          },
-          {
-            opcode: 'evaluateReporter',
-            func: 'javascript',
-            blockType: Scratch.BlockType.REPORTER,
-            text: 'evaluate [JS]',
-            arguments: {
-              JS: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: 'Math.random()'
-              }
-            }
-          },
-          {
-            opcode: 'evaluateBoolean',
-            func: 'javascript',
-            blockType: Scratch.BlockType.BOOLEAN,
-            text: 'evaluate [JS]',
-            arguments: {
-              JS: {
-                type: Scratch.ArgumentType.STRING,
-                defaultValue: 'Math.round(Math.random()) === 1'
-              }
-            }
-          },
-        ]
-      };
+        }
     }
 
-   javascript(args, util) {
-    const output = eval(args.JS);
-    return (output) ? output : '';
-    }
-  }
-
-  Scratch.extensions.register(new CustomJS());
+    // 注册扩展
+    Scratch.extensions.register(new SimpleJsExecutor());
 })(Scratch);
